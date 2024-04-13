@@ -1,3 +1,3 @@
 We are still working on the readme, stay tunned...
 
-Presentation Slides for this paper can be found on [IEEE SigPort](https://sigport.org/documents/unravel-anomalies-end-end-seasonal-trend-decomposition-approach-time-series-anomaly)
+Presentation Slides for this paper can be found on [IEEE SigPort](https://sigport.org/documents/unravel-anomalies-end-end-seasonal-trend-decomposition-approach-time-series-anomaly) ([Download](https://sigport.org/sites/default/files/docs/TADNet%20Oral.pdf)). 
