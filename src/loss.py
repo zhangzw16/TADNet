@@ -159,7 +159,7 @@ def cal_loss_mse(source, estimate_source, source_lengths, position):
     
 
     # Step 2. MSE_loss
-    mse = torch.sum((zero_mean_target[:,-1,:] - zero_mean_estimate)**2)
+    mse = torch.sum((zero_mean_target[:,:zero_mean_estimate.shape[1],:] - zero_mean_estimate)**2)
     return mse
 
 

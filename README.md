@@ -35,7 +35,7 @@ python run.py --mode synthetic
 Train the model using the command:
 ```bash
 python run.py --mode pretrain --loss 2
-python run.py --file_dir xxx.npy --mode finetune --loss 0 --number xxx --exists 1
+python run.py --file_dir xxx.npy --mode finetune --loss 5 --number xxx --exists 1
 ```
 
 Evaluate the model using the command:
