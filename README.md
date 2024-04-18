@@ -40,7 +40,7 @@ python run.py --file_dir xxx.npy --mode finetune --loss 0 --number xxx --exists 
 
 Evaluate the model using the command:
 ```bash
-python run.py --file_dir xxx --mode test --number xxx --exists 1
+python run.py --file_dir xxx.npy --mode test --number xxx --exists 1
 ```
 
 ## Citation
