@@ -7,7 +7,7 @@ import os
 
 parser = argparse.ArgumentParser('time series separation data generate')
 
-parser.add_argument('--out_dir', type=str, default='data_out',
+parser.add_argument('--out_dir', type=str, default='data_out_shmini',
                     help='Directory putting separated series files')
 
 def write_series(series, file_dir, num1, num2):
@@ -44,7 +44,7 @@ def write_series(series, file_dir, num1, num2):
 
 
 def main(args):
-    length =  len(pk_info)
+    length =  len(pk_info )
     out_dir = args.out_dir
     num = 0
     for i in range(length):
@@ -55,10 +55,25 @@ def main(args):
             write_series(series, out_dir, i+1, j+1)
             num += 1
 
+def main_rand(args):
+    length =  1
+    out_dir = args.out_dir
+    num = 0
+    for i in range(length):
+        round = 1500
+        for j in range(round):
+            g = generator(random_=True)
+            series = g.generate()
+            write_series(series, out_dir, 102, j+1)
+            num += 1
 
     
 
-
+pk_info_test = [1,1000,8000,'randseason',5,[],0.001,0.01,'amp_limited','gauss',20,0,1,2e-6,0.1,1,0.1,('collective',1000),100]
 if __name__ == '__main__':
     args = parser.parse_args()
     main(args)
+    main_rand(args)
+
+    # main(args)
+    

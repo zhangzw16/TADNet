@@ -133,8 +133,12 @@ class Solver(object):
                 mixture_lengths = mixture_lengths.to(device)
                 padded_source = padded_source.to(device)
             estimate_source = self.model(padded_mixture)
-            loss, max_snr, estimate_source = \
-                cal_loss(padded_source, estimate_source, mixture_lengths, position, self.loss, epoch)
+            if not multi_data:
+                loss, max_snr, estimate_source = \
+                    cal_loss(padded_source, estimate_source, mixture_lengths, position, self.loss, epoch)
+            else:
+                loss, max_snr, estimate_source = \
+                    cal_loss(padded_source, estimate_source, mixture_lengths, position, 2, epoch)
             if not cross_valid:
                 self.optimizer.zero_grad()
                 loss.backward()

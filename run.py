@@ -6,8 +6,6 @@ parser.add_argument('--file_dir', type=str, default=None,
                     help='directory including training info')
 parser.add_argument('--mode', type=str, default=None,
                     help='run mode')
-parser.add_argument('--pretrain', type=int, default=None,
-                    help='with pretraining or not')
 parser.add_argument('--loss', type=str, default=None,
                     help='loss function type')
 parser.add_argument('--number', type=str, default=None,
@@ -15,7 +13,7 @@ parser.add_argument('--number', type=str, default=None,
 parser.add_argument('--exists', type=bool, default=False,
                     help='exists or not')
 
-def trans_train(in_file):
+def process_train(in_file):
     out = "data_c/dataset/tr/"
     out_v = "data_c/dataset/cv/"
     dir_set = ["mix", "s1", "s2", "s3"]
@@ -42,7 +40,7 @@ def trans_train(in_file):
         for k in range(4):
             np.save(out_v + dir_set[k] + '/signal' + str(i+j*int(data.shape[0])), data[i])
 
-def trans_test(in_file):
+def process_test(in_file):
     out = "data_c/dataset/tt/"
     dir_set = ["mix", "s1", "s2", "s3"]
     for i in dir_set:
@@ -58,23 +56,36 @@ def trans_test(in_file):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    # train
-    if args.mode == "train":
+    # synthetic
+    if args.mode == "synthetic":
+        print("generating synthetic data")
+        os.system("python synthetic/main.py --out_dir data_c/data_sp")
+        os.system("python src/preprocess.py --in-dir data_c/data_sp --out-dir data_/data_sp")
+
+    # pretrain
+    elif args.mode == "pretrain":
+        print("pretraining")
+        if args.exists:
+            os.system(f"python src/train.py --train_dir data_/data_sp --valid_dir data_/data_sp --segment_len 8000 --cv_maxlen 32000 --use_cuda 1 --epochs 10 --half_lr 1 --early_stop 0 --max_norm 5 --shuffle 1 --batch_size 12 --optimizer adam --lr 5e-4 --momentum 0 --l2 0 --save_folder experiments/pretrain/ --checkpoint 1 --continue_from 'experiments/{args.number}/temp_best.pth.tar' --print_freq 1000 --loss {args.loss} --multi_data 0 --train_dir2 data_/data_sp")
+        else:
+            os.system(f"python src/train.py --train_dir data_/data_sp --valid_dir data_/data_sp --segment_len 8000 --cv_maxlen 32000 --use_cuda 1 --epochs 15 --half_lr 1 --early_stop 0 --max_norm 5 --shuffle 1 --batch_size 12 --optimizer adam --lr 1e-3 --momentum 0 --l2 0 --save_folder experiments/pretrain/  --checkpoint 1  --print_freq 1000 --loss {args.loss} --multi_data 0 --train_dir2 data_/data_sp")
+        
+    # finetune
+    if args.mode == "finetune":
         print("processing data")
-        trans_train(args.file_dir)
-        trans_test(args.file_dir.replace('train','test'))
+        process_train(args.file_dir)
+        process_test(args.file_dir.replace('train','test'))
         os.system("python src/preprocess.py --in-dir data_c/dataset --out-dir data_/dataset")
         print("training")
         if args.exists:
-            os.system(f"python src/train.py --train_dir data_/dataset/tr --valid_dir data_/dataset/cv --segment_len 8000 --cv_maxlen 32000 --use_cuda 1 --epochs 10 --half_lr 1 --early_stop 0 --max_norm 5 --shuffle 1 --batch_size 12 --optimizer adam --lr 5e-4 --momentum 0 --l2 0 --save_folder experiments/{args.number}/ --checkpoint 1 --continue_from 'experiments/{args.number}/temp_best.pth.tar' --print_freq 1000 --loss {args.loss} --jt 0 --train_dir2 data_/data_sp")
+            os.system(f"python src/train.py --train_dir data_/dataset/tr --valid_dir data_/dataset/cv --segment_len 8000 --cv_maxlen 32000 --use_cuda 1 --epochs 10 --half_lr 1 --early_stop 0 --max_norm 5 --shuffle 1 --batch_size 12 --optimizer adam --lr 5e-4 --momentum 0 --l2 0 --save_folder experiments/{args.number}/ --checkpoint 1 --continue_from 'experiments/pretrain/temp_best.pth.tar' --print_freq 1000 --loss {args.loss} --multi_data 1 --train_dir2 data_/data_sp")
         else:
-            os.system(f"python src/train.py --train_dir data_/dataset/tr --valid_dir data_/dataset/cv --segment_len 8000 --cv_maxlen 32000 --use_cuda 1 --epochs 15 --half_lr 1 --early_stop 0 --max_norm 5 --shuffle 1 --batch_size 12 --optimizer adam --lr 1e-3 --momentum 0 --l2 0 --save_folder experiments/{args.number}/  --checkpoint 1  --print_freq 1000 --loss {args.loss} --train_dir2 data_/data_sp")
-    # test
-            
+            os.system(f"python src/train.py --train_dir data_/dataset/tr --valid_dir data_/dataset/cv --segment_len 8000 --cv_maxlen 32000 --use_cuda 1 --epochs 15 --half_lr 1 --early_stop 0 --max_norm 5 --shuffle 1 --batch_size 12 --optimizer adam --lr 1e-3 --momentum 0 --l2 0 --save_folder experiments/{args.number}/  --checkpoint 1  --print_freq 1000 --loss {args.loss} --multi_data 1 --train_dir2 data_/data_sp")
+    # test        
     elif args.mode == "test":
         print("processing data")
-        trans_train(args.file_dir.replace('test','train'))
-        trans_test(args.file_dir)
+        process_train(args.file_dir.replace('test','train'))
+        process_test(args.file_dir)
         os.system("python src/preprocess.py --in-dir data_c/dataset --out-dir data_/dataset")
         print("testing")
         if args.exists:
@@ -86,14 +97,4 @@ if __name__ == '__main__':
         np.save('test/labels/labels'+ args.number , labels)
         os.system("python src/test.py --data_index " + args.number)
 
-    # train_by_synthetic
-    elif args.mode == "train_by_synthetic":
-        print("processing data")
-        os.system("python synthetic/main.py --out_dir data_c/data_sp")
-        os.system("python src/preprocess.py --in-dir data_c/data_sp --out-dir data_/data_sp")
-        print("training")
-        if args.exists:
-            os.system(f"python src/train.py --train_dir data_/data_sp --valid_dir data_/data_sp --segment_len 8000 --cv_maxlen 32000 --use_cuda 1 --epochs 10 --half_lr 1 --early_stop 0 --max_norm 5 --shuffle 1 --batch_size 12 --optimizer adam --lr 5e-4 --momentum 0 --l2 0 --save_folder experiments/{args.number}/ --checkpoint 1 --continue_from 'experiments/{args.number}/temp_best.pth.tar' --print_freq 1000 --loss {args.loss} --jt 0 --train_dir2 data_/data_sp")
-        else:
-            os.system(f"python src/train.py --train_dir data_/data_sp --valid_dir data_/data_sp --segment_len 8000 --cv_maxlen 32000 --use_cuda 1 --epochs 15 --half_lr 1 --early_stop 0 --max_norm 5 --shuffle 1 --batch_size 12 --optimizer adam --lr 1e-3 --momentum 0 --l2 0 --save_folder experiments/{args.number}/  --checkpoint 1  --print_freq 1000 --loss {args.loss} --train_dir2 data_/data_sp")
-        
+    

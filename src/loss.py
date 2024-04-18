@@ -86,7 +86,6 @@ def cal_loss_mask(source, estimate_source, source_lengths, position):
     tt = torch.ones(1,8000) * 0.1
     tt[0,position[0][0]:position[0][1]] = 1
     tt = tt.cuda()
-    print(zero_mean_target.shape)
     mse = torch.sum(((zero_mean_target[:,-1,:] - torch.sum(zero_mean_estimate[:,:zero_mean_estimate.shape[1],:], dim=1))**2)*tt)
     return mse
 

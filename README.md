@@ -28,18 +28,19 @@ For more details on the datasets used in the paper, please refer to [this repo](
 
 Generate the synthetic dataset using the command:
 ```bash
-TODO
+python run.py --mode synthetic 
 ```
 ## Training & Evaluation
 
 Train the model using the command:
 ```bash
-TODO
+python run.py --mode pretrain --loss 2
+python run.py --file_dir xxx.npy --mode finetune --loss 0 --number xxx --exists 1
 ```
 
 Evaluate the model using the command:
 ```bash
-TODO
+python run.py --file_dir xxx --mode test --number xxx --exists 1
 ```
 
 ## Citation
